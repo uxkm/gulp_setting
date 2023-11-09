@@ -1,0 +1,16 @@
+{
+  "gnb_data": [
+    {
+      "name": "home",
+      "href": "/"
+    },
+    {
+      "name": "intro",
+      "href": "/pages/intro.html"
+    },
+    {
+      "name": "history",
+      "href": "/pages/history.html"
+    }
+  ]
+}

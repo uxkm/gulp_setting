@@ -1,0 +1,31 @@
+{%- macro include(fileName) -%}
+	{%- include fileName ignore missing -%}
+{%- endmacro -%}
+{#- // 들여쓰기(Tab Indent) 조정을 위한 macro -#}
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<title>Gulp Setting</title>
+	<link href="/assets/css/style.min.css" rel="stylesheet" />
+</head>
+<body>
+<div class="wrap">
+	{{ include( "_templates/_include/_header.njk" ) | tabIndent(1) }}
+
+	<main class="container">
+		{% filter tabIndent(1) %}
+			{% block content %}
+			{%- endblock %}
+		{%- endfilter %}
+	</main>
+	<!-- // content -->
+
+	{{ include( "_templates/_include/_footer.njk" ) | tabIndent(1) }}
+</div>
+<!-- //wrap -->
+
+<script src="/assets/js/main.min.js"></script>
+</body>
+</html>

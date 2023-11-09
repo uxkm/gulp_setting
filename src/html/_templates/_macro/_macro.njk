@@ -1,0 +1,6 @@
+{%- macro image( class, src, alt, width="", height="auto" ) -%}
+	<figure class="{{ class }}">
+		<img src="{{ src }}" width="{{ width }}" height="{{ height }}">
+		<figcaption>{{ alt }}</figcaption>
+	</figure>
+{%- endmacro %}

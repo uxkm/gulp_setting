@@ -1,0 +1,7 @@
+{%- extends "_templates/_layout.njk" -%}
+{%- import "_templates/_macro/_macro.njk" as macro %}
+
+{% block content %}
+	<h1>index 페이지 입니다.</h1>
+	{{ macro.image( "image_box", "/_assets/images/visual.png", "메인 이미지 입니다.", width="400px" ) }}
+{%- endblock %}
