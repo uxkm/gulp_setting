@@ -17,6 +17,10 @@ import postCss from "gulp-postcss";
 import rename from "gulp-rename";
 import dependents from "gulp-dependents";
 
+import bro from 'gulp-bro';
+import babelify from 'babelify';
+import minify from 'gulp-minify';
+
 
 // routes -----------------------------------------------------------
 const src = './src';
@@ -122,6 +126,28 @@ const css = () => {
   .pipe( gulp.dest(path_dist.css) );                      // 컴파일 후 css파일이 생성될 목적지 설정
 }
 
+// js
+const js = () => {
+  return gulp.src([
+    path_src.js + '/main.js'
+  ])
+    .pipe( sourcemaps.init({ loadMaps: true }) )
+    .pipe( bro({
+      transform: [
+        babelify.configure({ presets: ['@babel/preset-env'] }),
+        [ 'uglifyify', { global: true, sourceMap: true  } ]
+      ]
+    }) )
+    .pipe( sourcemaps.write('./') )
+    .pipe(minify({
+      ext: {
+        min: '.min.js'
+      },
+      ignoreFiles: ['-min.js']
+    }))
+    .pipe( gulp.dest(path_dist.js) );
+}
+
 // clean
 const clean = () => del([dist]);                       // dist 폴더 삭제
 
@@ -146,6 +172,10 @@ const watch = () => {
   // sass watch
   const scss_watcher = gulp.watch(path_src.css + "/**/*", css);
   file_management(scss_watcher, path_src.css, path_dist.css);
+
+  // js watch
+  const js_watcher = gulp.watch(path_src.js + "/**/*", js);
+  file_management(js_watcher, path_src.js, path_dist.js);
 }
 // watch - 파일 감시 및 삭제를 위한 함수
 const file_management = (watcher_target, src_path, dist_path) => {
@@ -175,7 +205,7 @@ const file_management = (watcher_target, src_path, dist_path) => {
       console.log(destFilePath_html);
       del.sync(destFilePath_html);
     }
-    
+
     // 위 파일 외 삭제
     else{
       const destFilePath = path.resolve(dist_path, filePathFromSrc);
@@ -192,7 +222,7 @@ const file_management = (watcher_target, src_path, dist_path) => {
 const prepare = gulp.series([ clean ]);
 
 // 위 prepare 실행 완료 후 순차적으로 실행되어야 하는 task 그룹
-const assets = gulp.series([ html, css ]);
+const assets = gulp.series([ html, css, js ]);
 
 // 동시에 여러 개의 task가 실행되어야 하는 그룹 (병렬로 실행)
 const live = gulp.parallel([ webserver, watch ]);
