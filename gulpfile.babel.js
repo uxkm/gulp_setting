@@ -16,10 +16,9 @@ import autoprefixer from "autoprefixer";
 import postCss from "gulp-postcss";
 import rename from "gulp-rename";
 import dependents from "gulp-dependents";
-
-import bro from 'gulp-bro';
-import babelify from 'babelify';
-import minify from 'gulp-minify';
+import bro from "gulp-bro";
+import babelify from "babelify";
+import minify from "gulp-minify";
 
 
 // routes -----------------------------------------------------------
@@ -129,23 +128,21 @@ const css = () => {
 // js
 const js = () => {
   return gulp.src([
-    path_src.js + '/main.js'
+    path_src.js + '/main.js'                                  // 트렌스파일 대상 경로 (util.js 는 main.js 에 import 하기 때문에 호출 안함)
   ])
-    .pipe( sourcemaps.init({ loadMaps: true }) )
-    .pipe( bro({
-      transform: [
-        babelify.configure({ presets: ['@babel/preset-env'] }),
-        [ 'uglifyify', { global: true, sourceMap: true  } ]
-      ]
-    }) )
-    .pipe( sourcemaps.write('./') )
-    .pipe(minify({
-      ext: {
-        min: '.min.js'
-      },
-      ignoreFiles: ['-min.js']
-    }))
-    .pipe( gulp.dest(path_dist.js) );
+  .pipe( sourcemaps.init({ loadMaps: true }) )                // 소스맵 초기화 (기존의 소스 맵을 유지하고 수정하는 데 사용하기 위해 옵션 설정)
+  .pipe( bro({                                                // 트렌스파일 시작
+    transform: [
+      babelify.configure({ presets: ['@babel/preset-env'] }), // ES6 이상의 문법을 일반 브라우저가 코드를 이해할 수 있도록 변환
+      [ 'uglifyify', { global: true } ]                       // 코드 최소화 및 난독화
+    ]
+  }) )
+  .pipe( sourcemaps.write('./') )                             // 소스맵 작성
+  .pipe(minify({                                              // 트렌스파일된 코드 압축 및 min 파일 생성
+    ext: { min: '.min.js' },                                  // 축소된 파일을 출력하는 파일 이름의 접미사 설정
+    ignoreFiles: ['-min.js']                                  // 해당 패턴과 일치하는 파일을 축소하지 않음
+  }))
+  .pipe( gulp.dest(path_dist.js) );                           // 트렌스파일 후 생성될 목적지 설정
 }
 
 // clean
