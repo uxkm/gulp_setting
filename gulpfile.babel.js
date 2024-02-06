@@ -19,6 +19,8 @@ import dependents from "gulp-dependents";
 import bro from "gulp-bro";
 import babelify from "babelify";
 import minify from "gulp-minify";
+import imagemin from "gulp-imagemin";
+import newer from "gulp-newer";
 
 
 // routes -----------------------------------------------------------
@@ -49,7 +51,7 @@ const onErrorHandler = (error) => console.log(error);  // plumber option (에러
 
 // task -------------------------------------------------------------
 
-// html
+// html task
 const html = () => {
   // 들여쓰기(Tab Indent) 조정을 위한 함수
   const manageEnvironment = (environment) => {
@@ -88,7 +90,7 @@ const html = () => {
   .pipe( gulp.dest(path_dist.html) )                   // 빌드 후 html 파일이 생성될 목적지 설정
 }
 
-// css
+// css task
 const css = () => {
   //scss 옵션 정의
   const sass = gulpSass(dartSass);                        // ECMAScript 모듈(최신 Node.js 14 이상에서 지원됨)에서 사용하기 위해 선언
@@ -125,7 +127,7 @@ const css = () => {
   .pipe( gulp.dest(path_dist.css) );                      // 컴파일 후 css파일이 생성될 목적지 설정
 }
 
-// js
+// js task
 const js = () => {
   return gulp.src([
     path_src.js + '/main.js'                                  // 트렌스파일 대상 경로 (util.js 는 main.js 에 import 하기 때문에 호출 안함)
@@ -145,10 +147,18 @@ const js = () => {
   .pipe( gulp.dest(path_dist.js) );                           // 트렌스파일 후 생성될 목적지 설정
 }
 
-// clean
+// image task
+const image = () => {
+  return gulp.src( path_src.images + '/**/*' )         // 최적화 이미지 대상
+  .pipe( newer( path_dist.images ) )                   // 변경된 파일만 통과, 변경되지 않은 파일 건너뛰기
+  .pipe( imagemin( { verbose:true } ) )                // 이미지 최적화 ( 최적화 된 이미지의 정보 기록 옵션 적용 )
+  .pipe( gulp.dest( path_dist.images ) );              // 최적화 후 생성될 목적지 설정
+}
+
+// clean task
 const clean = () => del([dist]);                       // dist 폴더 삭제
 
-// webserver
+// webserver task
 const webserver = () => {
   return gulp.src(dist)                                // webserver를 실행 할 폴더 경로
   .pipe(
@@ -160,7 +170,7 @@ const webserver = () => {
   );
 }
 
-// watch
+// watch task
 const watch = () => {
   // njk(html) watch
   const html_watcher = gulp.watch(path_src.html + "/**/*", html);
@@ -173,6 +183,10 @@ const watch = () => {
   // js watch
   const js_watcher = gulp.watch(path_src.js + "/**/*", js);
   file_management(js_watcher, path_src.js, path_dist.js);
+
+  // image watch
+  const image_watcher = gulp.watch(path_src.images + "/**/*", image);
+  file_management(image_watcher, path_src.images, path_dist.images);
 }
 // watch - 파일 감시 및 삭제를 위한 함수
 const file_management = (watcher_target, src_path, dist_path) => {
@@ -199,14 +213,12 @@ const file_management = (watcher_target, src_path, dist_path) => {
     // njk(html) 삭제
     else if( extension_type === 'njk' ){
       const destFilePath_html = path.resolve(dist_path, filePathFromSrc).replace('.njk','.html');
-      console.log(destFilePath_html);
       del.sync(destFilePath_html);
     }
 
     // 위 파일 외 삭제
     else{
       const destFilePath = path.resolve(dist_path, filePathFromSrc);
-      console.log(destFilePath);
       del.sync(destFilePath);
     }
   });
@@ -216,7 +228,7 @@ const file_management = (watcher_target, src_path, dist_path) => {
 // series & parallel (task 그룹화) ----------------------------------
 
 // 순차적으로 실행되어야 하는 task 그룹
-const prepare = gulp.series([ clean ]);
+const prepare = gulp.series([ clean, image ]);
 
 // 위 prepare 실행 완료 후 순차적으로 실행되어야 하는 task 그룹
 const assets = gulp.series([ html, css, js ]);
