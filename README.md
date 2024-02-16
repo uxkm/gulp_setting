@@ -1,2 +1,2 @@
 # gulp_setting
-Gulp 세팅용 저장소
+UXKM Gulp basic setting
